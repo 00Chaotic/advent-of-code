@@ -46,4 +46,54 @@ function parseColumns(data, column1, column2) {
   });
 }
 
+function part2() {
+  const occurenceCache = new Map(); // Cache results to reduce number of lookups
+  let similarityScore = 0;
+
+  // For every element, count occurrences and update similarity score
+  for (let i = 0; i < column1.length; i++) {
+    const element = column1[i];
+
+    const cachedOccurrences = occurenceCache.get(element);
+    if (cachedOccurrences !== undefined) {
+      similarityScore += (element * cachedOccurrences);
+      continue;
+    }
+
+    const occurrences = countOccurrences(element);
+    occurenceCache[element] = occurrences;
+
+    similarityScore += (element * occurrences);
+  }
+
+  console.log("Similarity score: %d", similarityScore);
+}
+
+/**
+ * Count occurences in column2 of the given element. Relies on the fact that
+ * the columns are sorted, so any occurrences will be next to each other.
+ * @param {number} element 
+ * @returns Number of occurrences
+ */
+function countOccurrences(element) {
+  const startIndex = column2.indexOf(element);
+
+  // No matches found
+  if (startIndex === -1) {
+    return 0;
+  }
+
+  let occurrences = 1;
+
+  for (let i = startIndex; i < column2.length; i++) {
+    if (column2[i+1] === element) {
+      occurrences++;
+      continue;
+    }
+
+    return occurrences;
+  }
+}
+
 part1();
+part2();
