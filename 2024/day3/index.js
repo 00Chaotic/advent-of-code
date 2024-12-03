@@ -9,6 +9,16 @@ function part1() {
   console.log(`Sum: ${sum}`);
 }
 
+function part2() {
+  let input = fs.readFileSync(path.resolve(__dirname, 'input.txt')).toString();
+  input = input.replaceAll(/don\'t\(\)(.|\n)*?do\(\)/gs, '')
+
+  const matches = input.matchAll(/mul\((\d{1,3}),(\d{1,3})\)/g);
+  const sum = processMatches(matches);
+  
+  console.log(`Sum: ${sum}`);
+}
+
 /**
  * Find the sum of multiplying each pair in the list of matches
  * @param {RegExpStringIterator<RegExpExecArray>} matches iterator for regex matches
@@ -28,3 +38,4 @@ function processMatches(matches) {
 }
 
 part1();
+part2();
