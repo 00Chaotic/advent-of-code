@@ -69,7 +69,7 @@ function parseUpdates(input) {
 }
 
 /**
- * Evaluate a list of updates according to the specified list of rules
+ * Create a list of valid updates according to the specified list of rules
  * @param {OrderRule[]} rules 
  * @param {number[][]} updates
  * @returns {number[][]}
@@ -78,26 +78,34 @@ function validUpdates(rules, updates) {
   const validUpdates = [];
 
   for (i = 0; i < updates.length; i++) {
-    let invalidNums = [];
-    let isValid = true;
-
-    for (j = 0; j < updates[i].length; j++) {
-      const value = updates[i][j];
-
-      if (invalidNums.some(rule => rule.x === value)) {
-        isValid = false;
-        break;
-      }
-
-      invalidNums = invalidNums.concat(rules.filter(rule => !invalidNums.includes(value) && rule.y === value));
-    }
-
-    if (isValid) {
+    if (isValidUpdate(rules, updates[i])) {
       validUpdates.push(updates[i]);
     }
   }
 
   return validUpdates;
+}
+
+/**
+ * Evaluate one update according to the specified rules
+ * @param {OrderRule[]} rules 
+ * @param {number[]} update 
+ * @returns {boolean}
+ */
+function isValidUpdate(rules, update) {
+  let invalidNums = [];
+
+  for (j = 0; j < update.length; j++) {
+    const value = update[j];
+
+    if (invalidNums.some(rule => rule.x === value)) {
+      return false;
+    }
+
+    invalidNums = invalidNums.concat(rules.filter(rule => !invalidNums.includes(value) && rule.y === value));
+  }
+
+  return true;
 }
 
 part1();
