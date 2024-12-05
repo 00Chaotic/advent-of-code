@@ -18,10 +18,10 @@ function part1() {
   const rules = parseRules(ruleStr);
   const updates = parseUpdates(updateStr);
 
-  const valid = validUpdates(rules, updates);
+  const evaluatedUpdates = sortUpdates(rules, updates);
 
   let sum = 0;
-  valid.forEach(row => {
+  evaluatedUpdates.validUpdates.forEach(row => {
     const middleIndex = (row.length-1)/2;
     sum += row[middleIndex];
   });
@@ -69,21 +69,24 @@ function parseUpdates(input) {
 }
 
 /**
- * Create a list of valid updates according to the specified list of rules
+ * Create a list of valid and invalid updates according to the specified list of rules
  * @param {OrderRule[]} rules 
  * @param {number[][]} updates
  * @returns {number[][]}
  */
-function validUpdates(rules, updates) {
+function sortUpdates(rules, updates) {
   const validUpdates = [];
+  const invalidUpdates = [];
 
   for (i = 0; i < updates.length; i++) {
     if (isValidUpdate(rules, updates[i])) {
       validUpdates.push(updates[i]);
+    } else {
+      invalidUpdates.push(updates[i]);
     }
   }
 
-  return validUpdates;
+  return { validUpdates: validUpdates, invalidUpdates: invalidUpdates };
 }
 
 /**
@@ -108,4 +111,75 @@ function isValidUpdate(rules, update) {
   return true;
 }
 
+function part2() {
+  const input = fs.readFileSync(path.resolve(__dirname, 'input.txt')).toString();
+  const lines = input.split('\n');
+  
+  const separator = lines.findIndex(line => line.trim() === '');
+  const ruleStr = lines.slice(0, separator);
+  const updateStr = lines.slice(separator+1);
+
+  const rules = parseRules(ruleStr);
+  const updates = parseUpdates(updateStr);
+
+  const sortedUpdates = sortUpdates(rules, updates);
+  const fixedUpdates = fixUpdates(rules, sortedUpdates.invalidUpdates);
+
+  let sum = 0;
+  fixedUpdates.forEach(row => {
+    const middleIndex = (row.length-1)/2;
+    sum += row[middleIndex];
+  });
+
+  console.log(`Sum of middle numbers of valid updates: ${sum}`);
+}
+
+/**
+ * Sorts through and fixes incorrect updates
+ * @param {OrderRule[]} rules 
+ * @param {number[][]} updates
+ * @returns {number[][]}
+ */
+function fixUpdates(rules, updates) {
+  const fixedUpdates = [];
+
+  for (i = 0; i < updates.length; i++) {
+    fixedUpdates.push(fixUpdate(rules, updates[i]));
+  }
+
+  return fixedUpdates;
+}
+
+/**
+ * Fix one update according to the specified rules
+ * @param {OrderRule[]} rules 
+ * @param {number[]} update 
+ * @returns {number[]}
+ */
+function fixUpdate(rules, update) {
+  for (j = 0; j < update.length; j++) {
+    const currNum = update[j];
+
+    for (k = update.length-1; k >= 0; k--) {
+      const tempNum = update[k];
+
+      if (rules.some(rule => rule.y === currNum && rule.x === tempNum)) {
+        update[k] = currNum;
+        update[j] = tempNum;
+
+        // Reset to current index and reprocess
+        if (!isValidUpdate(rules, update)) {
+          j -= 2;
+          break;
+        }
+
+        return update;
+      }
+    }
+  }
+
+  return update;
+}
+
 part1();
+part2();
